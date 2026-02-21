@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trivia - Memory, Word Search & Puzzle</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: linear-gradient(to bottom, #ffd6ec, #ffeaf6);
+  margin: 0;
+}
+
+h1 { color: #ff4da6; margin-top: 20px; }
+
+/* NAVIGATION */
+.nav {
+  text-align: center;
+  margin: 10px 0 20px 0;
+}
+
+.nav a {
+  text-decoration: none;
+  margin: 4px;
+  color: white;
+  background: #ff4fa3;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: inline-block;
+}
+
+/* MEMORY GAME */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 120px);
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.memory-card {
+  width: 120px;
+  height: 120px;
+  background: #fff0f8;
+  border-radius: 15px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* WORD SEARCH */
+#word-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 35px);
+  gap: 5px;
+  justify-content: center;
+  margin: 30px auto;
+}
+.cell {
+  width: 35px;
+  height: 35px;
+  background: white;
+  border: 2px solid #ffcce6;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+}
+.selected { background: #ffb3d9; }
+.found { background: #ff4da6; color: white; }
+.crossed { text-decoration: line-through; color: gray; }
+
+/* WORD LIST */
+#word-list {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #ff4da6;
+  font-size: 16px;
+  word-wrap: break-word;
+}
+
+/* PUZZLE */
+#puzzle-grid {
+  width:306px;
+  height:306px;
+  margin:20px auto;
+  display:grid;
+  grid-template-columns:repeat(3,100px);
+  grid-template-rows:repeat(3,100px);
+  gap:2px;
+  border:3px solid #ff4da6;
+}
+.drop-zone {
+  width:100px;
+  height:100px;
+  background:#ffe6f2;
+  border:1px dashed #ff99cc;
+}
+#pieces {
+  width:320px;
+  margin:20px auto;
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  justify-content:center;
+}
+.piece {
+  width:100px;
+  height:100px;
+  border:1px solid #fff;
+  background-size:300px 300px;
+  cursor:grab;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Lailanie's Memory Game 🎀</h1>
+
+<!-- NAVIGATION BUTTONS BELOW HEADING -->
+<div class="nav">
+  <a href="index.html">Home</a>
+  <a href="Game.html">Game</a>
+  <a href="Gallery.html">Gallery</a>
+  <a href="Message.html">Message</a>
+</div>
+
+<div class="memory-grid" id="memory-grid"></div>
+<div id="memory-message">Find all the pairs 💖</div>
+
+<h1>Word Search for Lailanie 💖</h1>
+<div id="word-grid"></div>
+<h3>Find these words:</h3>
+<div id="word-list"></div>
+
+<h1>Complete the Picture 🧩</h1>
+<div id="puzzle-grid"></div>
+<h3>Drag the pieces here 👇</h3>
+<div id="pieces"></div>
+
+<script>
+/* ================= MEMORY GAME ================= */
+const memoryImages = [
+  'tita1.jpg','tita2.jpg','tita3.jpg','tita4.jpg',
+  'tita5.jpg','tita6.jpg','tita7.jpg','tita8.jpg'
+];
+let memoryCards = [...memoryImages, ...memoryImages].sort(() => Math.random() - 0.5);
+
+const memoryGrid = document.getElementById('memory-grid');
+let firstCard=null, secondCard=null, lockBoard=false, matches=0;
+
+memoryCards.forEach(img=>{
+  const card=document.createElement('div');
+  card.classList.add('memory-card');
+  card.dataset.img=img;
+  card.onclick=()=>flipCard(card);
+  memoryGrid.appendChild(card);
+});
+
+function flipCard(card){
+  if(lockBoard || card===firstCard || card.style.backgroundImage) return;
+  card.style.backgroundImage=`url(${card.dataset.img})`;
+
+  if(!firstCard){ firstCard=card; return; }
+  secondCard=card;
+
+  if(firstCard.dataset.img===secondCard.dataset.img){
+    matches++;
+    firstCard=null; secondCard=null;
+    if(matches===memoryImages.length){
+      document.getElementById('memory-message').textContent="🎉 You found all pairs!";
+    }
+  }else{
+    lockBoard=true;
+    setTimeout(()=>{
+      firstCard.style.backgroundImage='';
+      secondCard.style.backgroundImage='';
+      firstCard=null; secondCard=null;
+      lockBoard=false;
+    },800);
+  }
+}
+
+/* ================= WORD SEARCH ================= */
+const words=["MICKEY","WORK","CLEANING","LOVING","GORGEOUS","CARING","STRONG","KIND","INDEPENDENT","WOMAN","LAILANIE"];
+const gridSize=12;
+const wordGrid=document.getElementById("word-grid");
+const alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+let gridLetters=[];
+for(let i=0;i<gridSize*gridSize;i++){
+  gridLetters.push(alphabet[Math.floor(Math.random()*alphabet.length)]);
+}
+
+function placeWord(word,row,col){
+  for(let i=0;i<word.length;i++){
+    gridLetters[row*gridSize+col+i]=word[i];
+  }
+}
+placeWord("MICKEY",0,0);
+placeWord("WORK",1,2);
+placeWord("CLEANING",2,1);
+placeWord("LOVING",3,3);
+placeWord("GORGEOUS",4,0);
+placeWord("CARING",5,2);
+placeWord("STRONG",6,4);
+placeWord("KIND",7,1);
+placeWord("INDEPENDENT",8,0);
+placeWord("WOMAN",9,5);
+placeWord("LAILANIE",10,1);
+
+let selectedCells=[], selectedWord="";
+
+gridLetters.forEach(letter=>{
+  const cell=document.createElement("div");
+  cell.classList.add("cell");
+  cell.textContent=letter;
+
+  cell.onmousedown=()=>startSelection(cell);
+  cell.onmouseenter=()=>extendSelection(cell);
+  cell.onmouseup=endSelection;
+
+  wordGrid.appendChild(cell);
+});
+
+/* ===== WORD LIST WITH SPACES ===== */
+words.forEach((word, index) => {
+  const span = document.createElement("span");
+  span.textContent = word;
+  span.id = "word-" + word;
+  document.getElementById("word-list").appendChild(span);
+
+  if(index !== words.length - 1){
+    document.getElementById("word-list").appendChild(document.createTextNode(" "));
+  }
+});
+
+function startSelection(cell){
+  clearSelection();
+  selectedCells.push(cell);
+  selectedWord=cell.textContent;
+  cell.classList.add("selected");
+}
+function extendSelection(cell){
+  if(selectedCells.length>0 && !selectedCells.includes(cell)){
+    selectedCells.push(cell);
+    selectedWord+=cell.textContent;
+    cell.classList.add("selected");
+  }
+}
+function endSelection(){
+  if(words.includes(selectedWord)){
+    selectedCells.forEach(c=>{c.classList.add("found");});
+    document.getElementById("word-"+selectedWord).classList.add("crossed");
+  }
+  clearSelection();
+}
+function clearSelection(){
+  selectedCells.forEach(c=>c.classList.remove("selected"));
+  selectedCells=[]; selectedWord="";
+}
+
+/* ================= PUZZLE ================= */
+const size=3;
+const puzzleGrid=document.getElementById("puzzle-grid");
+const piecesContainer=document.getElementById("pieces");
+let draggedPiece=null;
+
+for(let i=0;i<size*size;i++){
+  const zone=document.createElement("div");
+  zone.classList.add("drop-zone");
+  zone.dataset.index=i;
+
+  zone.ondragover=e=>e.preventDefault();
+  zone.ondrop=function(){
+    if(!this.firstChild && draggedPiece.dataset.index===this.dataset.index){
+      this.appendChild(draggedPiece);
+      checkWin();
+    }
+  };
+  puzzleGrid.appendChild(zone);
+}
+
+let pieces=[];
+for(let i=0;i<size*size;i++){
+  const piece=document.createElement("div");
+  piece.classList.add("piece");
+  piece.draggable=true;
+  piece.dataset.index=i;
+  piece.style.backgroundImage="url('puzzletita.jpg')";
+  piece.style.backgroundPosition=`${-(i%size)*100}px ${-Math.floor(i/size)*100}px`;
+
+  piece.ondragstart=function(){draggedPiece=this;};
+  pieces.push(piece);
+}
+
+pieces.sort(()=>Math.random()-0.5);
+pieces.forEach(p=>piecesContainer.appendChild(p));
+
+function checkWin(){
+  const zones=document.querySelectorAll(".drop-zone");
+  for(let z of zones){
+    if(!z.firstChild || z.firstChild.dataset.index!==z.dataset.index) return;
+  }
+  alert("🎉 You completed the puzzle!");
+}
+</script>
+
+</body>
+</html>
